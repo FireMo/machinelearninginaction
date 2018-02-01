@@ -1,3 +1,4 @@
+# encoding=utf-8
 '''
 Created on Oct 12, 2010
 Decision Tree Source Code for Machine Learning in Action Ch. 3
@@ -5,6 +6,10 @@ Decision Tree Source Code for Machine Learning in Action Ch. 3
 '''
 from math import log
 import operator
+import chardet
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 
 # create the dataset
@@ -17,6 +22,39 @@ def createDataSet():
     labels = ['no surfacing', 'flippers']
     # change to discrete values
     return dataSet, labels
+
+
+# 获取源数据
+def get_data():
+    fr = open('xiguadata4utf8.txt')
+    lenses = [inst.strip().split('\t') for inst in fr.readlines()]
+    # print chardet.detect(lenses[0][0])
+    # print '----'
+    fp = open('xigualabel2.txt')
+    lensesLableses = [inst.strip().split('\t') for inst in fp.readlines()]
+    lensesLables = lensesLableses[0]
+
+    # lensesLables = ['色泽', '根蒂', '敲声', '纹理', '脐部', '触感']
+    # lensesLablestwo = lensesLables[:]
+    # lensesLables = ['seze', 'gendi', 'qiaosheng', 'wenli', 'qibu', 'chugan']
+    return lenses, lensesLables
+
+
+# 将数据集的数组组装成标签
+def data_deal():
+    data_dict = {}
+    lenses, lenses_labels = get_data()
+    for i in range(len(lenses_labels)):
+        lab_list = set([example[i] for example in lenses])
+        data_dict[lenses_labels[i]] = lab_list
+    return data_dict
+
+
+# # 查询标签取值
+# def labels_num(ind):
+#     lenses, lenses_labels = get_data()
+#     lab_list = set([example[ind] for example in lenses])
+#     return lab_list
 
 
 # calculate the Shannon Entropy
@@ -80,22 +118,36 @@ def majorityCnt(classList):
     return sortedClassCount[0][0]
 
 
-def createTree(dataSet,labels):
+def createTree(dataSet, labels):
     classList = [example[-1] for example in dataSet]
     if classList.count(classList[0]) == len(classList): 
         return classList[0]  # stop splitting when all of the classes are equal
     if len(dataSet[0]) == 1:  # stop splitting when there are no more features in dataSet
         return majorityCnt(classList)
+    # 标签中的索引号
     bestFeat = chooseBestFeatureToSplit(dataSet)
+    # 标签值
     bestFeatLabel = labels[bestFeat]
     myTree = {bestFeatLabel: {}}
     subLabels = labels[:]
     del(subLabels[bestFeat])
     featValues = [example[bestFeat] for example in dataSet]
     uniqueVals = set(featValues)
-    for value in uniqueVals:
-        # subLabels = labels[:]       # copy all of labels, so trees don't mess up existing labels
-        myTree[bestFeatLabel][value] = createTree(splitDataSet(dataSet, bestFeat, value), subLabels)
+    # print '***'
+    # for mei in uniqueVals:
+    #     print chardet.detect(mei)
+    # print '***'
+
+    num_feat = data_deal()[bestFeatLabel]
+
+    for value in num_feat:
+        if value not in uniqueVals:
+            myTree[bestFeatLabel][value] = majorityCnt(classList)
+            return myTree
+        else:
+            # print type(value)  # str类型
+            # subLabels = labels[:]     # copy all of labels, so trees don't mess up existing labels
+            myTree[bestFeatLabel][value] = createTree(splitDataSet(dataSet, bestFeat, value), subLabels)
     return myTree
 
 

@@ -7,9 +7,9 @@ import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 font = FontProperties(fname=r"c:\windows\fonts\simsun.ttc", size=14)
 
-# import sys
-# reload(sys)
-# sys.setdefaultencoding('utf-8')
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 
 decisionNode = dict(boxstyle="sawtooth", fc="0.8")
